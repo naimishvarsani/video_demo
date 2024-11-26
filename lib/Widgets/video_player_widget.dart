@@ -1,3 +1,5 @@
+// ignore_for_file: no_leading_underscores_for_local_identifiers
+
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
@@ -40,7 +42,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
           videoPlayerOptions: VideoPlayerOptions(allowBackgroundPlayback: true))
         ..initialize().then((_) {
           setState(() {
-            _controller.setLooping(true); // Set video to loop
+            _controller.setLooping(true);
             _controller.play();
 
             _videoInitialized = true;
@@ -48,7 +50,6 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
         });
       _controller.addListener(() {
         if (_controller.value.isPlaying && !_isPlaying) {
-          // Video has started playing
           setState(() {
             _isPlaying = true;
           });
@@ -63,16 +64,12 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
-      // App is in the foreground
       _controller.play();
     } else if (state == AppLifecycleState.inactive) {
-      // App is partially obscured
       _controller.pause();
     } else if (state == AppLifecycleState.paused) {
-      // App is in the background
       _controller.pause();
     } else if (state == AppLifecycleState.detached) {
-      // App is terminated
       _controller.dispose();
     }
   }
@@ -82,7 +79,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
     log('disposing a controller');
     if (mounted) {
       _controller.dispose();
-    } // Dispose of the controller when done
+    }
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -113,8 +110,6 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
               alignment: AlignmentDirectional.bottomEnd,
               children: [
                 !_videoInitialized
-                    // when the video is not initialized you can set a thumbnail.
-                    // to make it simple, I use CircularProgressIndicator
                     ? const Center(
                         child: CircularProgressIndicator(
                           color: Colors.amber,
@@ -138,20 +133,47 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
                   ),
                 !_videoInitialized
                     ? const SizedBox()
-                    : VideoProgressIndicator(
-                        _controller,
-                        allowScrubbing: true,
-                        colors: const VideoProgressColors(
-                          playedColor: Colors.amber,
-                          bufferedColor: Colors.grey,
-                          backgroundColor: Colors.white,
+                    : Container(
+                        height: 30,
+                        color: Colors.white54,
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 15),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  ValueListenableBuilder<VideoPlayerValue>(
+                                    valueListenable: _controller,
+                                    builder: (_, _videoPlayerValue, __) {
+                                      return Text(
+                                        "${_videoPlayerValue.position.inMinutes.toString().padLeft(2, '0')}:${_videoPlayerValue.position.inSeconds.toString().padLeft(2, '0')}",
+                                      );
+                                    },
+                                  ),
+                                  Text(
+                                    "${_controller.value.duration.inMinutes.toString()}:${_controller.value.duration.inSeconds.toString()}",
+                                  ),
+                                ],
+                              ),
+                            ),
+                            VideoProgressIndicator(
+                              _controller,
+                              allowScrubbing: true,
+                              colors: const VideoProgressColors(
+                                playedColor: Colors.amber,
+                                bufferedColor: Colors.grey,
+                                backgroundColor: Colors.white,
+                              ),
+                            ),
+                          ],
                         ),
                       )
               ],
             ),
           ),
-          // here you can add title, user Info,
-          // description, views count etc.
         ],
       ),
     );
